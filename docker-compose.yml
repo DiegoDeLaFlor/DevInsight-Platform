@@ -1,0 +1,84 @@
+version: "3.8"
+
+# ==============================================================================
+# DevInsight - Enterprise Engineering Intelligence Platform
+# System Architect Configuration
+# ==============================================================================
+
+services:
+  # 1. Frontend (React + Vite)
+  frontend:
+    container_name: devinsight_frontend
+    build:
+      context: ./devinsight-frontend
+      dockerfile: Dockerfile
+    ports:
+      - "${FRONTEND_PORT:-5173}:5173"
+    environment:
+      - VITE_API_BASE_URL=http://localhost:${BACKEND_PORT:-5000}/api
+    networks:
+      - devinsight_net
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:5173/ || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    depends_on:
+      - backend
+
+  # 2. Backend (.NET 8 Core API + Roslyn)
+  backend:
+    container_name: devinsight_backend
+    build:
+      context: ./devinsight-backend
+      dockerfile: Dockerfile
+    ports:
+      - "${BACKEND_PORT:-5000}:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - AiEngine__BaseUrl=http://ai-engine:${AI_ENGINE_PORT:-8000}
+      - ConnectionStrings__DefaultConnection=${DB_CONNECTION_STRING}
+      - GitHub__ClientId=${GITHUB_CLIENT_ID}
+      - GitHub__ClientSecret=${GITHUB_CLIENT_SECRET}
+    networks:
+      - devinsight_net
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    depends_on:
+      - ai-engine
+
+  # 3. AI Engine (Python FastAPI)
+  ai-engine:
+    container_name: devinsight_ai_engine
+    build:
+      context: ./devinsight-ai-engine
+      dockerfile: Dockerfile
+    ports:
+      - "${AI_ENGINE_PORT:-8000}:8000"
+    environment:
+      - APP_ENV=development
+      - PORT=8000
+      # AI Model configs below
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+    networks:
+      - devinsight_net
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+networks:
+  devinsight_net:
+    driver: bridge
+    name: devinsight_network
+
+volumes:
+  # Can be expanded to map PostgreSQL/Redis data later
+  db_data:

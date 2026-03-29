@@ -1,0 +1,27 @@
+# General
+.DS_Store
+Thumbs.db
+*.log
+
+# Env
+.env
+!.env.example
+
+# .NET
+**/bin/
+**/obj/
+
+# Python
+**/__pycache__/
+**/.pytest_cache/
+*.pyc
+*.pyo
+*.pyd
+.venv/
+venv/
+
+# Node
+**/node_modules/
+
+# VS Code
+.vscode/*.code-workspace
