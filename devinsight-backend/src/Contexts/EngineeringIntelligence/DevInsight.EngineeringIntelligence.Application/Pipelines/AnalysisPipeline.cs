@@ -23,10 +23,10 @@ public sealed class AnalysisPipeline : IAnalysisPipeline
         _analysisRepository = analysisRepository;
     }
 
-    public async Task<Analysis> ExecuteAsync(Repository repository, CancellationToken cancellationToken)
+    public async Task<Analysis> ExecuteAsync(Repository repository, string? accessToken, CancellationToken cancellationToken)
     {
         var analysis = Analysis.Start(repository.Id);
-        var clonedPath = await _gitHubService.CloneRepositoryAsync(repository.SourceUrl, repository.Branch, cancellationToken);
+        var clonedPath = await _gitHubService.CloneRepositoryAsync(repository.SourceUrl, repository.Branch, accessToken, cancellationToken);
         var fileResults = await _codeAnalyzerService.AnalyzeAsync(clonedPath, cancellationToken);
 
         var allIssues = fileResults

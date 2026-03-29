@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import type { FormEvent } from 'react'
+import { Link } from 'react-router-dom'
 import { apiClient } from '../../services/apiClient'
 import type { AnalyzeRepositoryRequest, AnalyzeRepositoryResponse } from '../../types/api'
 
@@ -68,6 +69,11 @@ export function RepositoryPage() {
           <h2>Analysis Requested</h2>
           <p>Repository ID: {response.repositoryId}</p>
           <p>Analysis ID: {response.analysisId}</p>
+          <div className="actions">
+            <Link to={`/analysis?repositoryId=${encodeURIComponent(response.repositoryId)}`}>
+              Ver resultados del analisis
+            </Link>
+          </div>
         </div>
       )}
 

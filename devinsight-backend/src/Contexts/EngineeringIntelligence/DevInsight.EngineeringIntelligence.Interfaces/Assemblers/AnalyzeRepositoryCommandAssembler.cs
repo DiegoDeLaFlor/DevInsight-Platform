@@ -6,5 +6,5 @@ namespace DevInsight.EngineeringIntelligence.Interfaces.Assemblers;
 public static class AnalyzeRepositoryCommandAssembler
 {
     public static AnalyzeRepositoryCommand ToCommand(AnalyzeRepositoryRequestResource resource) =>
-        new(resource.RepositoryName, resource.RepositoryUrl, resource.Branch);
+        new(resource.RepositoryName, resource.RepositoryUrl, resource.Branch, resource.GitHubSessionId);
 }

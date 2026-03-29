@@ -6,21 +6,28 @@ DevInsight es una plataforma SaaS orientada a inteligencia de ingeniería que an
 
 Implementado en esta iteración:
 
-- Backend base con DDD + Clean Architecture para el bounded context EngineeringIntelligence.
-- Analizador AST con Roslyn para reglas iniciales.
+- Backend con DDD + Clean Architecture para el bounded context EngineeringIntelligence.
+- Integración OAuth de GitHub en backend (inicio, callback y listado de repositorios).
+- Clonado de repositorios con soporte de sesión GitHub (repos públicos y privados).
+- Analizador AST con Roslyn para reglas iniciales de C#.
 - AI Engine en FastAPI con endpoint de insights.
+- Frontend React con flujo funcional:
+  - Solicitar análisis de repositorio.
+  - Ver último análisis por repositoryId.
+  - Renderizar issues e insights reales.
 
 Pendiente en próximas iteraciones:
 
-- Frontend React (dashboard y experiencia tipo copilot).
-- IdentityAccessManagement completo con OAuth GitHub end-to-end.
+- Integración OAuth completa en frontend (login/callback/session lifecycle).
 - Persistencia EF Core en lugar de almacenamiento en memoria.
+- Reglas avanzadas de arquitectura, seguridad y métricas evolutivas.
+- Soporte multi-lenguaje AST (actualmente solo C#).
 
 ## Estructura del monorepo
 
 - devinsight-backend: API ASP.NET Core + capas DDD.
 - devinsight-ai-engine: servicio FastAPI para generar insights.
-- devinsight-frontend: SPA React (pendiente de implementación).
+- devinsight-frontend: SPA React con páginas Dashboard, Repository, Analysis y Chat (MVP).
 - docker-compose.yml: orquestación de servicios.
 - .env.example: plantilla de variables de entorno.
 
@@ -98,9 +105,15 @@ AI Engine disponible en:
 
 ## API principal (Backend)
 
+### OAuth GitHub
+
+- `GET /api/auth/github/login-url`
+- `POST /api/auth/github/callback`
+- `GET /api/auth/github/repositories?sessionId={sessionId}`
+
 ### Solicitar análisis de repositorio
 
-POST /api/engineering-intelligence/repositories/analyze
+`POST /api/engineering-intelligence/repositories/analyze`
 
 Ejemplo:
 
@@ -108,13 +121,14 @@ Ejemplo:
 {
   "repositoryName": "aspnetcore",
   "repositoryUrl": "https://github.com/dotnet/aspnetcore",
-  "branch": "main"
+  "branch": "main",
+  "gitHubSessionId": "optional-session-id"
 }
 ```
 
 ### Obtener último análisis por repositorio
 
-GET /api/engineering-intelligence/repositories/{repositoryId}/analysis/latest
+`GET /api/engineering-intelligence/repositories/{repositoryId}/analysis/latest`
 
 ## Reglas AST implementadas
 
@@ -122,17 +136,24 @@ GET /api/engineering-intelligence/repositories/{repositoryId}/analysis/latest
 - DeepNesting: anidación mayor a 3 niveles.
 - LargeFile: archivo con más de 300 líneas.
 
+Alcance actual del analizador:
+
+- Solo archivos C# (`*.cs`) usando Roslyn.
+- Repositorios sin C# pueden retornar 0 issues sin error.
+
 ## Seguridad y sesgo (estado actual)
 
 Medidas aplicadas en esta iteración:
 
 - Validación de host de repositorio para limitar a github.com.
 - Validación de formato de branch para reducir riesgo de inyección en clonación.
+- Manejo server-side de sesión GitHub (token no expuesto al frontend).
+- Validación de state OAuth con expiración para mitigar replay.
 - Contrato estructurado backend -> AI Engine para reducir ambigüedad en insights.
 
 Riesgos abiertos para siguientes fases:
 
-- OAuth GitHub completo con cookies seguras y control CSRF.
+- Endurecer OAuth con almacenamiento distribuido de sesión, rotación y trazabilidad.
 - Persistencia y auditoría de eventos de seguridad.
 - Evaluación de sesgo de IA con dataset de validación multi-repo y multi-estilo.
 
@@ -140,5 +161,5 @@ Riesgos abiertos para siguientes fases:
 
 1. Implementar IdentityAccessManagement + OAuth GitHub end-to-end.
 2. Agregar EF Core y migraciones para Repository, Analysis e Insight.
-3. Construir frontend React con dashboard y vista de análisis.
+3. Conectar frontend al flujo OAuth completo y selección de repositorios autenticados.
 4. Añadir pruebas de contrato entre Backend y AI Engine.

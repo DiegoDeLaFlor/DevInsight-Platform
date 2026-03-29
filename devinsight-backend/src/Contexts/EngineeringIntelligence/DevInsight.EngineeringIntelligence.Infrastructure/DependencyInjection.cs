@@ -14,9 +14,12 @@ public static class DependencyInjection
         services.AddSingleton<IRepositoryRepository, InMemoryRepositoryRepository>();
         services.AddSingleton<IAnalysisRepository, InMemoryAnalysisRepository>();
 
+        services.Configure<GitHubOptions>(configuration.GetSection(GitHubOptions.SectionName));
         services.Configure<AiEngineOptions>(configuration.GetSection(AiEngineOptions.SectionName));
 
         services.AddHttpClient<IAIInsightService, AiEngineInsightService>();
+        services.AddHttpClient<IGitHubOAuthService, GitHubOAuthService>();
+        services.AddSingleton<IGitHubSessionService, InMemoryGitHubSessionService>();
         services.AddScoped<IGitHubService, FileSystemGitHubService>();
         services.AddScoped<ICodeAnalyzerService, RoslynCodeAnalyzerService>();
 

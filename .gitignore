@@ -7,6 +7,10 @@ Thumbs.db
 .env
 !.env.example
 
+# Local prompt artifacts
+prompt.md
+Code Analyzer.md
+
 # .NET
 **/bin/
 **/obj/
@@ -25,3 +29,7 @@ venv/
 
 # VS Code
 .vscode/*.code-workspace
+
+# Local IDE caches
+.idea/
+*.user

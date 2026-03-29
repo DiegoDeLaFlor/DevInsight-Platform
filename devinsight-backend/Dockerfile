@@ -16,6 +16,10 @@ RUN dotnet publish src/DevInsight.Api/DevInsight.Api.csproj -c Release -o /app/p
 FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS final
 WORKDIR /app
 
+RUN apt-get update \
+	&& apt-get install -y --no-install-recommends git ca-certificates \
+	&& rm -rf /var/lib/apt/lists/*
+
 COPY --from=build /app/publish .
 EXPOSE 8080
 ENV ASPNETCORE_URLS=http://+:8080
